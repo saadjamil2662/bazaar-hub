@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  jenkins-database:
+    image: postgres:15-alpine
+    container_name: jenkins_bazaar_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: bazaar_hub
+    volumes:
+      - jenkins-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432" # Different port to avoid conflict
+
+  jenkins-redis:
+    image: redis:alpine
+    container_name: jenkins_bazaar_redis
+    ports:
+      - "6380:6379" # Different port
+
+  jenkins-backend:
+    image: node:18-alpine
+    container_name: jenkins_bazaar_backend
+    working_dir: /app
+    volumes:
+      # Attach a volume for the code instead of writing Dockerfile
+      - ./backend:/app
+    environment:
+      - PORT=5001
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:mysecretpassword@jenkins-database:5432/bazaar_hub
+      - REDIS_URL=redis://jenkins-redis:6379
+      - JWT_SECRET=jenkins_test_secret_key
+      - FRONTEND_URL=http://localhost:8081
+    ports:
+      - "5001:5001" # Different port
+    # Command to simulate a build and run phase inside the container
+    command: sh -c "npm install && npm start"
+    depends_on:
+      - jenkins-database
+      - jenkins-redis
+
+  jenkins-frontend:
+    image: node:18-alpine
+    container_name: jenkins_bazaar_frontend
+    working_dir: /app
+    volumes:
+      # Attach a volume for the code instead of writing Dockerfile
+      - ./frontend:/app
+    environment:
+      - REACT_APP_API_URL=http://localhost:5001
+    ports:
+      - "8081:3000" # Different port
+    command: sh -c "npm install && npm start"
+    depends_on:
+      - jenkins-backend
+
+volumes:
+  jenkins-db-data:
