@@ -21,9 +21,7 @@ services:
       - "6379:6379"
 
   backend:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
+    image: saadjamil1/bazaar-hub-backend:latest
     container_name: bazaar_backend
     environment:
       - PORT=5000
@@ -39,9 +37,7 @@ services:
       - redis
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: saadjamil1/bazaar-hub-frontend:latest
     container_name: bazaar_frontend
     ports:
       - "80:80"

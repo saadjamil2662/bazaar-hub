@@ -5,8 +5,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // This step uses the Git Plugin to fetch the source code
-                // Replace the URL with your actual GitHub repository URL
-                git branch: 'main', url: 'https://github.com/your-username/bazaar-hub.git'
+                git branch: 'main', url: 'https://github.com/saadjamil2662/bazaar-hub.git'
             }
         }
 
