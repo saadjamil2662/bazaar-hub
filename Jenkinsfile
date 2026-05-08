@@ -50,8 +50,14 @@ pipeline {
                 try {
                     emailext (
                         subject: "Test Results: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
-                        body: "The Jenkins pipeline has completed. The automated Selenium tests resulted in: ${currentBuild.currentResult}\n\nPlease check the Jenkins console for the full logs: ${env.BUILD_URL}",
-                        recipientProviders: [developers(), requestor()]
+                        body: """
+Pipeline completed.
+
+Status: ${currentBuild.currentResult}
+
+Check logs: ${env.BUILD_URL}
+""",
+                        to: "fugmbcgj@gmail.com"
                     )
                 } catch (Exception e) {
                     echo "Notice: Email failed to send. This is normal if SMTP is not configured in Jenkins System Settings."
