@@ -12,9 +12,9 @@ pipeline {
                 script {
                     sh '''
                         git config --global --add safe.directory $(pwd)
-                        git log -1 --format='%ae' > /tmp/pusher_email.txt
+                        git log -1 --format='%ae' > pusher_email.txt
                     '''
-                    env.PUSHER_EMAIL = readFile('/tmp/pusher_email.txt').trim()
+                    env.PUSHER_EMAIL = readFile('pusher_email.txt').trim()
                     echo "=== PUSHER EMAIL: ${env.PUSHER_EMAIL} ==="
                 }
             }
