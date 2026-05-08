@@ -6,6 +6,13 @@ pipeline {
             steps {
                 // This step uses the Git Plugin to fetch the source code
                 git branch: 'main', url: 'https://github.com/saadjamil2662/bazaar-hub.git'
+                script {
+                    env.PUSHER_EMAIL = sh(
+                        script: "git log -1 --pretty=format:'%ae'",
+                        returnStdout: true
+                    ).trim()
+                    echo "Push made by: ${env.PUSHER_EMAIL}"
+                }
             }
         }
 
@@ -46,31 +53,36 @@ pipeline {
     post {
         always {
             echo "CI/CD Pipeline execution has finished."
-            script {
-                try {
-                    emailext (
-                        subject: "Test Results: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
-                        body: """
-Pipeline completed.
-
-Status: ${currentBuild.currentResult}
-
-Check logs: ${env.BUILD_URL}
-""",
-                        to: "saadjamil2662@gmail.com"
-                    )
-                } catch (Exception e) {
-                    echo "Notice: Email failed to send. This is normal if SMTP is not configured in Jenkins System Settings."
-                }
-            }
         }
         success {
             echo "Deployment was successful!"
+            script {
+                try {
+                    emailext(
+                        to: "${env.PUSHER_EMAIL}",
+                        subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
+                        body: "<h2 style='color:green'>All 15 tests passed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${env.PUSHER_EMAIL}<br>Duration: ${currentBuild.durationString}</p><p><a href='${BUILD_URL}'>View Build</a></p>",
+                        mimeType: 'text/html'
+                    )
+                } catch (Exception e) {
+                    echo "Notice: Email failed to send."
+                }
+            }
         }
         failure {
             echo "Deployment failed. Please check the logs."
-            // Optionally shut down failed containers
-            // sh 'docker-compose -f docker-compose-jenkins.yml down'
+            script {
+                try {
+                    emailext(
+                        to: "${env.PUSHER_EMAIL}",
+                        subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
+                        body: "<h2 style='color:red'>Pipeline failed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${env.PUSHER_EMAIL}</p><p><a href='${BUILD_URL}console'>View Console</a></p>",
+                        mimeType: 'text/html'
+                    )
+                } catch (Exception e) {
+                    echo "Notice: Email failed to send."
+                }
+            }
         }
     }
 }
