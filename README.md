@@ -4,7 +4,7 @@
 
 1. **Install Node.js** (Version 18 or higher)
    - Go to https://nodejs.org/
-   - Download and install the   LTS  version
+   - Download and install the  LTS  version
    - Verify: Open terminal/command prompt and type: `node --version`
 
 2. **Install PostgreSQL** (Version 14 or higher)
