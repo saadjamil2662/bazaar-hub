@@ -57,7 +57,7 @@ Status: ${currentBuild.currentResult}
 
 Check logs: ${env.BUILD_URL}
 """,
-                        to: "fugmbcgj@gmail.com"
+                        to: "saadjamil2662@gmail.com"
                     )
                 } catch (Exception e) {
                     echo "Notice: Email failed to send. This is normal if SMTP is not configured in Jenkins System Settings."
