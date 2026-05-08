@@ -52,20 +52,26 @@ pipeline {
             echo "Pipeline finished. Committer: ${env.PUSHER_EMAIL}"
         }
         success {
-            emailext(
-                to: "${env.PUSHER_EMAIL}",
-                subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
-                body: "<h2 style='color:green'>All 15 tests passed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${env.PUSHER_EMAIL}<br>Duration: ${currentBuild.durationString}</p><p><a href='${BUILD_URL}'>View Build</a></p>",
-                mimeType: 'text/html'
-            )
+            script {
+                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil2662@gmail.com'
+                emailext(
+                    to: recipient,
+                    subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
+                    body: "<h2 style='color:green'>All 15 tests passed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}<br>Duration: ${currentBuild.durationString}</p><p><a href='${BUILD_URL}'>View Build</a></p>",
+                    mimeType: 'text/html'
+                )
+            }
         }
         failure {
-            emailext(
-                to: "${env.PUSHER_EMAIL}",
-                subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
-                body: "<h2 style='color:red'>Pipeline failed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${env.PUSHER_EMAIL}</p><p><a href='${BUILD_URL}console'>View Console</a></p>",
-                mimeType: 'text/html'
-            )
+            script {
+                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil2662@gmail.com'
+                emailext(
+                    to: recipient,
+                    subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
+                    body: "<h2 style='color:red'>Pipeline failed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}</p><p><a href='${BUILD_URL}console'>View Console</a></p>",
+                    mimeType: 'text/html'
+                )
+            }
         }
     }
 }
