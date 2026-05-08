@@ -14,14 +14,14 @@ pipeline {
                 // This stage leverages Docker directly to spin up the container environment
                 // It uses the specialized jenkins compose file created for this pipeline
                 echo "Starting up the environment using Docker Compose..."
-                sh 'docker-compose -f docker-compose-jenkins.yml up -d'
+                sh 'docker compose -f docker-compose-jenkins.yml up -d'
             }
         }
         
         stage('Verify Deployment') {
             steps {
                 echo "Containers are now running. Listing running containers:"
-                sh 'docker-compose -f docker-compose-jenkins.yml ps'
+                sh 'docker compose -f docker-compose-jenkins.yml ps'
             }
         }
 
@@ -46,12 +46,18 @@ pipeline {
     post {
         always {
             echo "CI/CD Pipeline execution has finished."
-            emailext (
-                subject: "Test Results: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
-                body: "The Jenkins pipeline has completed. The automated Selenium tests resulted in: ${currentBuild.currentResult}\n\nPlease check the Jenkins console for the full logs: ${env.BUILD_URL}",
-                to: "qasimalik@gmail.com",
-                recipientProviders: [developers(), requestor()]
-            )
+            script {
+                try {
+                    emailext (
+                        subject: "Test Results: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
+                        body: "The Jenkins pipeline has completed. The automated Selenium tests resulted in: ${currentBuild.currentResult}\n\nPlease check the Jenkins console for the full logs: ${env.BUILD_URL}",
+                        to: "qasimalik@gmail.com",
+                        recipientProviders: [developers(), requestor()]
+                    )
+                } catch (Exception e) {
+                    echo "Notice: Email failed to send. This is normal if SMTP is not configured in Jenkins System Settings."
+                }
+            }
         }
         success {
             echo "Deployment was successful!"
