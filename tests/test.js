@@ -38,23 +38,23 @@ describe('Bazaar Hub Automated Test Suite (Selenium)', function () {
 
   it('Test 2: Should navigate to the Login page', async function () {
     await driver.get(APP_URL + '/login');
-    await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Sign in to your account')]")), 5000);
+    await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Login to Bazaar Hub')]")), 5000);
     const pageSource = await driver.getPageSource();
-    expect(pageSource).to.include('Sign in to your account');
+    expect(pageSource).to.include('Login to Bazaar Hub');
   });
 
   it('Test 3: Should navigate to the Register page', async function () {
     await driver.get(APP_URL + '/register');
-    await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Create your account')]")), 5000);
+    await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Join Bazaar Hub')]")), 5000);
     const pageSource = await driver.getPageSource();
-    expect(pageSource).to.include('Create your account');
+    expect(pageSource).to.include('Join Bazaar Hub');
   });
 
   it('Test 4: Should navigate to the Products page', async function () {
     await driver.get(APP_URL + '/products');
-    await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'All Products')]")), 5000);
+    await driver.wait(until.elementLocated(By.xpath("//*[contains(text(), 'Browse Products')]")), 5000);
     const pageSource = await driver.getPageSource();
-    expect(pageSource).to.include('All Products');
+    expect(pageSource).to.include('Browse Products');
   });
 
   it('Test 5: Should navigate to the Auctions page', async function () {
@@ -74,9 +74,9 @@ describe('Bazaar Hub Automated Test Suite (Selenium)', function () {
 
   it('Test 7: Verify Login form has email and password fields', async function () {
     await driver.get(APP_URL + '/login');
-    await driver.wait(until.elementLocated(By.name('email')), 5000);
-    const emailInput = await driver.findElements(By.name('email'));
-    const passwordInput = await driver.findElements(By.name('password'));
+    await driver.wait(until.elementLocated(By.css('input[type="email"]')), 5000);
+    const emailInput = await driver.findElements(By.css('input[type="email"]'));
+    const passwordInput = await driver.findElements(By.css('input[type="password"]'));
     expect(emailInput.length).to.be.greaterThan(0);
     expect(passwordInput.length).to.be.greaterThan(0);
   });
