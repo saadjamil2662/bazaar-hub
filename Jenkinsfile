@@ -51,7 +51,6 @@ pipeline {
                     emailext (
                         subject: "Test Results: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
                         body: "The Jenkins pipeline has completed. The automated Selenium tests resulted in: ${currentBuild.currentResult}\n\nPlease check the Jenkins console for the full logs: ${env.BUILD_URL}",
-                        to: "qasimalik@gmail.com",
                         recipientProviders: [developers(), requestor()]
                     )
                 } catch (Exception e) {
