@@ -8,14 +8,16 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Use checkout scm exactly like your friend does
                 checkout scm
                 script {
+                    sh "git config --global --add safe.directory ${env.WORKSPACE}"
+                    
                     env.PUSHER_EMAIL = sh(
-                        script: "git log -1 --pretty=format:'%ae'",
+                        script: "git log -1 --format='%ae'",
                         returnStdout: true
                     ).trim()
-                    echo "Push made by: ${env.PUSHER_EMAIL}"
+
+                    echo "=== PUSHER EMAIL: ${env.PUSHER_EMAIL} ==="
                 }
             }
         }
