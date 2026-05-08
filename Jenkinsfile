@@ -1,11 +1,21 @@
 pipeline {
     agent any
 
+    // Define at pipeline level so it's always accessible, including in post{}
+    environment {
+        PUSHER_EMAIL = ''
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
-                // This step uses the Git Plugin to fetch the source code
                 git branch: 'main', url: 'https://github.com/saadjamil2662/bazaar-hub.git'
+            }
+        }
+
+        // Separate stage so the variable is set before anything else can fail
+        stage('Get Committer Email') {
+            steps {
                 script {
                     env.PUSHER_EMAIL = sh(
                         script: "git log -1 --pretty=format:'%ae'",
@@ -18,8 +28,6 @@ pipeline {
 
         stage('Build & Deploy Containers') {
             steps {
-                // This stage leverages Docker directly to spin up the container environment
-                // It uses the specialized jenkins compose file created for this pipeline
                 echo "Starting up the environment using Docker Compose..."
                 sh 'docker compose -f docker-compose-jenkins.yml up -d'
             }
@@ -35,7 +43,6 @@ pipeline {
         stage('Wait for Environment') {
             steps {
                 echo "Waiting for the React frontend and Node backend to fully start..."
-                // Sleep for 30 seconds to allow the web server to start before running tests
                 sh 'sleep 30'
             }
         }
@@ -53,35 +60,37 @@ pipeline {
     post {
         always {
             echo "CI/CD Pipeline execution has finished."
+            // Debug line - check Jenkins console to confirm the value
+            echo "Sending email to: ${env.PUSHER_EMAIL}"
         }
         success {
-            echo "Deployment was successful!"
             script {
-                try {
-                    emailext(
-                        to: "${env.PUSHER_EMAIL}",
-                        subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
-                        body: "<h2 style='color:green'>All 15 tests passed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${env.PUSHER_EMAIL}<br>Duration: ${currentBuild.durationString}</p><p><a href='${BUILD_URL}'>View Build</a></p>",
-                        mimeType: 'text/html'
-                    )
-                } catch (Exception e) {
-                    echo "Notice: Email failed to send."
-                }
+                // Fallback to your own email if variable is somehow empty
+                def recipient = env.PUSHER_EMAIL?.trim() ? env.PUSHER_EMAIL : 'saadjamil2662@gmail.com'
+                emailext(
+                    to: recipient,
+                    subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
+                    body: """<h2 style='color:green'>All tests passed!</h2>
+                             <p>Build: #${BUILD_NUMBER}<br>
+                             Pusher: ${recipient}<br>
+                             Duration: ${currentBuild.durationString}</p>
+                             <p><a href='${BUILD_URL}'>View Build</a></p>""",
+                    mimeType: 'text/html'
+                )
             }
         }
         failure {
-            echo "Deployment failed. Please check the logs."
             script {
-                try {
-                    emailext(
-                        to: "${env.PUSHER_EMAIL}",
-                        subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
-                        body: "<h2 style='color:red'>Pipeline failed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${env.PUSHER_EMAIL}</p><p><a href='${BUILD_URL}console'>View Console</a></p>",
-                        mimeType: 'text/html'
-                    )
-                } catch (Exception e) {
-                    echo "Notice: Email failed to send."
-                }
+                def recipient = env.PUSHER_EMAIL?.trim() ? env.PUSHER_EMAIL : 'saadjamil2662@gmail.com'
+                emailext(
+                    to: recipient,
+                    subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
+                    body: """<h2 style='color:red'>Pipeline failed!</h2>
+                             <p>Build: #${BUILD_NUMBER}<br>
+                             Pusher: ${recipient}</p>
+                             <p><a href='${BUILD_URL}console'>View Console</a></p>""",
+                    mimeType: 'text/html'
+                )
             }
         }
     }
