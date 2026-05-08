@@ -1,25 +1,12 @@
 pipeline {
     agent any
 
-    environment {
-        PUSHER_EMAIL = ''
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                script {
-                    sh '''
-                        git config --global --add safe.directory $(pwd)
-                        git log -1 --format='%ae' > pusher_email.txt
-                    '''
-                    env.PUSHER_EMAIL = readFile('pusher_email.txt').trim()
-                    echo "=== PUSHER EMAIL: ${env.PUSHER_EMAIL} ==="
-                }
             }
         }
-
         stage('Build & Deploy Containers') {
             steps {
                 echo "Starting up the environment using Docker Compose..."
@@ -27,19 +14,16 @@ pipeline {
                 sh 'docker compose -f docker-compose-jenkins.yml up -d --build'
             }
         }
-        
         stage('Verify Deployment') {
             steps {
                 sh 'docker compose -f docker-compose-jenkins.yml ps'
             }
         }
-
         stage('Wait for Environment') {
             steps {
                 sh 'sleep 30'
             }
         }
-
         stage('Run Automated Tests') {
             steps {
                 sh 'docker build -t bazaar-hub-tests ./tests'
@@ -47,19 +31,37 @@ pipeline {
             }
         }
     }
-    
+
     post {
         always {
-            echo "Pipeline finished. Committer: ${env.PUSHER_EMAIL}"
+            script {
+                sh "git config --global --add safe.directory ${env.WORKSPACE}"
+                def pusherEmail = sh(
+                    script: "git log -1 --pretty=format:'%ae'",
+                    returnStdout: true
+                ).trim()
+                echo "Committer resolved in post: ${pusherEmail}"
+            }
         }
         success {
             script {
-                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil6226@gmail.com'
+                sh "git config --global --add safe.directory ${env.WORKSPACE}"
+                def recipient = sh(
+                    script: "git log -1 --pretty=format:'%ae'",
+                    returnStdout: true
+                ).trim() ?: 'saadjamil2662@gmail.com'
+                
                 try {
                     emailext(
                         to: recipient,
                         subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
-                        body: "<h2 style='color:green'>All 15 tests passed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}<br>Duration: ${currentBuild.durationString}</p><p><a href='${BUILD_URL}'>View Build</a></p>",
+                        body: """
+                            <h2 style='color:green'>All tests passed!</h2>
+                            <p>Build: #${BUILD_NUMBER}<br>
+                            Pusher: ${recipient}<br>
+                            Duration: ${currentBuild.durationString}</p>
+                            <p><a href='${BUILD_URL}'>View Build</a></p>
+                        """,
                         mimeType: 'text/html'
                     )
                 } catch (Exception e) {
@@ -69,12 +71,22 @@ pipeline {
         }
         failure {
             script {
-                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil6226@gmail.com'
+                sh "git config --global --add safe.directory ${env.WORKSPACE}"
+                def recipient = sh(
+                    script: "git log -1 --pretty=format:'%ae'",
+                    returnStdout: true
+                ).trim() ?: 'saadjamil2662@gmail.com'
+                
                 try {
                     emailext(
                         to: recipient,
                         subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
-                        body: "<h2 style='color:red'>Pipeline failed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}</p><p><a href='${BUILD_URL}console'>View Console</a></p>",
+                        body: """
+                            <h2 style='color:red'>Pipeline failed!</h2>
+                            <p>Build: #${BUILD_NUMBER}<br>
+                            Pusher: ${recipient}</p>
+                            <p><a href='${BUILD_URL}console'>View Console</a></p>
+                        """,
                         mimeType: 'text/html'
                     )
                 } catch (Exception e) {
