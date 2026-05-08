@@ -54,7 +54,7 @@ pipeline {
         }
         success {
             script {
-                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil2662@gmail.com'
+                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil6226@gmail.com'
                 try {
                     emailext(
                         to: recipient,
@@ -69,7 +69,7 @@ pipeline {
         }
         failure {
             script {
-                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil2662@gmail.com'
+                def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil6226@gmail.com'
                 try {
                     emailext(
                         to: recipient,
