@@ -49,7 +49,7 @@ pipeline {
                 def recipient = sh(
                     script: "git log -1 --pretty=format:'%ae'",
                     returnStdout: true
-                ).trim() ?: 'saadjamil6226@gmail.com'
+                ).trim() ?: 'saadjamil2662@gmail.com'
                 
                 try {
                     emailext(
@@ -75,7 +75,7 @@ pipeline {
                 def recipient = sh(
                     script: "git log -1 --pretty=format:'%ae'",
                     returnStdout: true
-                ).trim() ?: 'saadjamil6226@gmail.com'
+                ).trim() ?: 'saadjamil2662@gmail.com'
                 
                 try {
                     emailext(
