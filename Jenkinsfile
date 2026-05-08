@@ -54,23 +54,31 @@ pipeline {
         success {
             script {
                 def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil2662@gmail.com'
-                emailext(
-                    to: recipient,
-                    subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
-                    body: "<h2 style='color:green'>All 15 tests passed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}<br>Duration: ${currentBuild.durationString}</p><p><a href='${BUILD_URL}'>View Build</a></p>",
-                    mimeType: 'text/html'
-                )
+                try {
+                    emailext(
+                        to: recipient,
+                        subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
+                        body: "<h2 style='color:green'>All 15 tests passed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}<br>Duration: ${currentBuild.durationString}</p><p><a href='${BUILD_URL}'>View Build</a></p>",
+                        mimeType: 'text/html'
+                    )
+                } catch (Exception e) {
+                    echo "Notice: Email failed to send due to Jenkins SMTP config, but build succeeded!"
+                }
             }
         }
         failure {
             script {
                 def recipient = (env.PUSHER_EMAIL && env.PUSHER_EMAIL != 'null' && env.PUSHER_EMAIL.trim() != '') ? env.PUSHER_EMAIL.trim() : 'saadjamil2662@gmail.com'
-                emailext(
-                    to: recipient,
-                    subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
-                    body: "<h2 style='color:red'>Pipeline failed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}</p><p><a href='${BUILD_URL}console'>View Console</a></p>",
-                    mimeType: 'text/html'
-                )
+                try {
+                    emailext(
+                        to: recipient,
+                        subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
+                        body: "<h2 style='color:red'>Pipeline failed!</h2><p>Build: #${BUILD_NUMBER}<br>Pusher: ${recipient}</p><p><a href='${BUILD_URL}console'>View Console</a></p>",
+                        mimeType: 'text/html'
+                    )
+                } catch (Exception e) {
+                    echo "Notice: Email failed to send due to Jenkins SMTP config."
+                }
             }
         }
     }
