@@ -1,0 +1,14 @@
+{
+  "name": "bazaar-hub-tests",
+  "version": "1.0.0",
+  "description": "Selenium Automated Tests for Bazaar Hub",
+  "main": "test.js",
+  "scripts": {
+    "test": "mocha test.js --timeout 30000"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.15.0",
+    "mocha": "^10.2.0",
+    "chai": "^4.3.10"
+  }
+}

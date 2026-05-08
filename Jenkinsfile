@@ -24,11 +24,34 @@ pipeline {
                 sh 'docker-compose -f docker-compose-jenkins.yml ps'
             }
         }
+
+        stage('Wait for Environment') {
+            steps {
+                echo "Waiting for the React frontend and Node backend to fully start..."
+                // Sleep for 30 seconds to allow the web server to start before running tests
+                sh 'sleep 30'
+            }
+        }
+
+        stage('Run Automated Tests') {
+            steps {
+                echo "Building the test container..."
+                sh 'docker build -t bazaar-hub-tests ./tests'
+                echo "Running Selenium tests inside the container..."
+                sh 'docker run --rm --network host bazaar-hub-tests'
+            }
+        }
     }
     
     post {
         always {
             echo "CI/CD Pipeline execution has finished."
+            emailext (
+                subject: "Test Results: ${env.JOB_NAME} Build #${env.BUILD_NUMBER}",
+                body: "The Jenkins pipeline has completed. The automated Selenium tests resulted in: ${currentBuild.currentResult}\n\nPlease check the Jenkins console for the full logs: ${env.BUILD_URL}",
+                to: "qasimalik@gmail.com",
+                recipientProviders: [developers(), requestor()]
+            )
         }
         success {
             echo "Deployment was successful!"
