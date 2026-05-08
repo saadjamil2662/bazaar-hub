@@ -23,7 +23,8 @@ pipeline {
         stage('Build & Deploy Containers') {
             steps {
                 echo "Starting up the environment using Docker Compose..."
-                sh 'docker compose -f docker-compose-jenkins.yml up -d'
+                sh 'docker compose -f docker-compose-jenkins.yml down || true'
+                sh 'docker compose -f docker-compose-jenkins.yml up -d --build'
             }
         }
         
