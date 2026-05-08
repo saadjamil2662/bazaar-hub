@@ -1,24 +1,20 @@
 pipeline {
     agent any
 
-    // Define at pipeline level so it's always accessible, including in post{}
     environment {
         PUSHER_EMAIL = ''
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/saadjamil2662/bazaar-hub.git'
-            }
-        }
-
-        // Separate stage so the variable is set before anything else can fail
+        // NO manual Checkout Code stage needed — Jenkins does it automatically
+        
         stage('Get Committer Email') {
             steps {
                 script {
+                    // Use GIT_COMMIT env variable Jenkins sets automatically
+                    // This is more reliable than running git log yourself
                     env.PUSHER_EMAIL = sh(
-                        script: "git log -1 --pretty=format:'%ae'",
+                        script: "git show -s --format='%ae' ${env.GIT_COMMIT}",
                         returnStdout: true
                     ).trim()
                     echo "Push made by: ${env.PUSHER_EMAIL}"
@@ -35,23 +31,19 @@ pipeline {
         
         stage('Verify Deployment') {
             steps {
-                echo "Containers are now running. Listing running containers:"
                 sh 'docker compose -f docker-compose-jenkins.yml ps'
             }
         }
 
         stage('Wait for Environment') {
             steps {
-                echo "Waiting for the React frontend and Node backend to fully start..."
                 sh 'sleep 30'
             }
         }
 
         stage('Run Automated Tests') {
             steps {
-                echo "Building the test container..."
                 sh 'docker build -t bazaar-hub-tests ./tests'
-                echo "Running Selenium tests inside the container..."
                 sh 'docker run --rm --network host bazaar-hub-tests'
             }
         }
@@ -59,18 +51,18 @@ pipeline {
     
     post {
         always {
-            echo "CI/CD Pipeline execution has finished."
-            // Debug line - check Jenkins console to confirm the value
-            echo "Sending email to: ${env.PUSHER_EMAIL}"
+            echo "Pipeline finished. Committer: ${env.PUSHER_EMAIL}"
         }
         success {
             script {
-                // Fallback to your own email if variable is somehow empty
-                def recipient = env.PUSHER_EMAIL?.trim() ? env.PUSHER_EMAIL : 'saadjamil2662@gmail.com'
+                def recipient = env.PUSHER_EMAIL?.trim() && env.PUSHER_EMAIL != 'null' 
+                    ? env.PUSHER_EMAIL 
+                    : 'saadjamil2662@gmail.com'
+                echo "Emailing: ${recipient}"
                 emailext(
                     to: recipient,
                     subject: "✅ [Bazaar Hub CI] Build #${BUILD_NUMBER} PASSED",
-                    body: """<h2 style='color:green'>All tests passed!</h2>
+                    body: """<h2 style='color:green'>All 15 tests passed!</h2>
                              <p>Build: #${BUILD_NUMBER}<br>
                              Pusher: ${recipient}<br>
                              Duration: ${currentBuild.durationString}</p>
@@ -81,7 +73,9 @@ pipeline {
         }
         failure {
             script {
-                def recipient = env.PUSHER_EMAIL?.trim() ? env.PUSHER_EMAIL : 'saadjamil2662@gmail.com'
+                def recipient = env.PUSHER_EMAIL?.trim() && env.PUSHER_EMAIL != 'null'
+                    ? env.PUSHER_EMAIL
+                    : 'saadjamil2662@gmail.com'
                 emailext(
                     to: recipient,
                     subject: "❌ [Bazaar Hub CI] Build #${BUILD_NUMBER} FAILED",
