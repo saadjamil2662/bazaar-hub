@@ -11,7 +11,7 @@
    - Windows: https://www.postgresql.org/download/windows/
    - Mac: https://postgresapp.com/ or use `brew install postgresql`
    - During installation, remember your postgres password!
-   - Verify: Type `psql --version` in terminal
+   - Verify: Type `psql --version` in  terminal
 
 3. **Install Redis**
    - Windows: https://github.com/microsoftarchive/redis/releases (download .msi)
