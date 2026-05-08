@@ -10,13 +10,11 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    sh "git config --global --add safe.directory ${env.WORKSPACE}"
-                    
-                    env.PUSHER_EMAIL = sh(
-                        script: "git log -1 --format='%ae'",
-                        returnStdout: true
-                    ).trim()
-
+                    sh '''
+                        git config --global --add safe.directory $(pwd)
+                        git log -1 --format='%ae' > /tmp/pusher_email.txt
+                    '''
+                    env.PUSHER_EMAIL = readFile('/tmp/pusher_email.txt').trim()
                     echo "=== PUSHER EMAIL: ${env.PUSHER_EMAIL} ==="
                 }
             }
