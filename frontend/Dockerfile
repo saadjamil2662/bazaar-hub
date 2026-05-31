@@ -22,6 +22,9 @@ FROM nginx:alpine
 # Copy the optimized build output from stage 1 to Nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose Nginx's default port
 EXPOSE 80
 
