@@ -26,6 +26,8 @@ spec:
               value: "production"
             - name: DATABASE_URL
               value: "postgresql://postgres:mysecretpassword@database-service:5432/bazaar_hub"
+            - name: REDIS_URL
+              value: "redis://redis-service:6379"
           ports:
             - containerPort: 5000
           resources:
